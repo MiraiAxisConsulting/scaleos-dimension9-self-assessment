@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiraiAxis ScaleOS™ — Dimension 9: Customer & Market Excellence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --navy:#1B2A4A;
+  --gold:#C9A84C;
+  --navy-light:#EDEFF3;
+  --gold-light:#F4EFE0;
+  --text:#26314a;
+  --gray:#666;
+  --white:#fff;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:'Segoe UI',Arial,sans-serif;
+  background:#f4f5f8;
+  color:var(--text);
+}
+
+/* ---------- Password gate ---------- */
+#gate{
+  position:fixed; inset:0; background:var(--navy);
+  display:flex; align-items:center; justify-content:center; z-index:9999;
+  font-family:'Segoe UI',Arial,sans-serif;
+}
+.gate-card{
+  background:#fff; padding:44px 40px; border-radius:14px; width:400px;
+  text-align:center; box-shadow:0 10px 40px rgba(0,0,0,.3);
+}
+.gate-brand{
+  color:var(--gold); font-size:12px; font-weight:700; letter-spacing:3px;
+  text-transform:uppercase; margin-bottom:14px;
+}
+.gate-card h2{
+  color:var(--navy); margin:0 0 18px; font-family:Georgia,'Times New Roman',serif;
+  font-size:24px; font-weight:700; line-height:1.35;
+}
+.gate-card p{color:#6b7280; font-size:14px; line-height:1.6; margin:0 0 24px;}
+.gate-card input{
+  width:100%; padding:13px 16px; border:1px solid #d9dce3; border-radius:8px;
+  font-size:14.5px; margin-bottom:16px; text-align:center; color:#333;
+}
+.gate-card input::placeholder{color:#9aa0ab;}
+.gate-card button{
+  width:100%; padding:13px; background:var(--navy); color:#fff;
+  border:none; border-radius:8px; font-weight:700; font-size:15px; cursor:pointer;
+}
+.gate-error{color:#c0392b; font-size:13px; min-height:18px; margin-top:10px;}
+
+/* ---------- Main container ---------- */
+#app{display:none;}
+.progress-bar{
+  position:sticky; top:0; z-index:100; background:var(--navy);
+  height:6px; width:100%;
+}
+.progress-fill{height:100%; background:var(--gold); width:0%; transition:width .3s;}
+.progress-label{
+  position:sticky; top:6px; z-index:100; background:var(--navy); color:#fff;
+  text-align:center; font-size:13px; padding:6px 0;
+}
+
+.hero{
+  background:linear-gradient(135deg,var(--navy),#26375f);
+  color:#fff; padding:44px 20px 36px; text-align:center;
+}
+.hero .brand{color:var(--gold); letter-spacing:2px; font-size:13px; font-weight:700;}
+.hero h1{margin:10px 0 6px; font-size:26px;}
+.hero p{color:#cbd3e6; max-width:640px; margin:0 auto; font-size:14px;}
+
+.container{max-width:760px; margin:0 auto; padding:24px 18px 80px;}
+
+.card{
+  background:#fff; border-radius:10px; padding:22px 24px; margin-bottom:20px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+.intro-text p{font-size:14.5px; line-height:1.7; color:#333;}
+
+.legend-card h3{color:var(--navy); margin-top:0;}
+.legend-row{
+  display:flex; gap:12px; align-items:flex-start; padding:8px 0;
+  border-bottom:1px solid #eee;
+}
+.legend-row:last-child{border-bottom:none;}
+.legend-num{
+  background:var(--navy); color:#fff; width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;
+  flex-shrink:0;
+}
+.legend-row b{color:var(--navy);}
+.legend-row span{font-size:13.5px; color:#444;}
+
+/* details form */
+.form-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.form-grid.full{grid-template-columns:1fr;}
+.field label{display:block; font-size:12.5px; font-weight:700; color:var(--navy); margin-bottom:5px;}
+.field input, .field select{
+  width:100%; padding:9px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px;
+}
+.field{margin-bottom:4px;}
+
+/* accordion */
+.accordion{margin-bottom:16px; border-radius:10px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,.06);}
+.accordion-header{
+  background:var(--navy); color:#fff; padding:16px 20px; cursor:pointer;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.accordion-header .cap-title{font-size:15px; font-weight:700;}
+.accordion-header .cap-code{color:var(--gold); font-size:12px; font-weight:700; letter-spacing:1px;}
+.accordion-counter{
+  background:rgba(255,255,255,.15); padding:4px 10px; border-radius:20px; font-size:12px;
+}
+.accordion-body{background:#fff; padding:0 20px; max-height:0; overflow:hidden; transition:max-height .35s ease;}
+.accordion-body.open{padding:16px 20px 20px; max-height:none; overflow:visible;}
+.accordion-arrow{transition:transform .3s;}
+.accordion-header.open .accordion-arrow{transform:rotate(180deg);}
+
+.question-block{padding:16px 0; border-bottom:1px solid #eee;}
+.question-block:last-child{border-bottom:none;}
+.question-text{font-size:14.5px; color:#222; margin-bottom:10px; font-weight:600;}
+.scale-row{display:flex; gap:8px; margin-bottom:10px;}
+.scale-btn{
+  flex:1; padding:10px 4px; text-align:center; border:1.5px solid #d8d8d8; border-radius:6px;
+  cursor:pointer; font-size:13px; font-weight:700; color:#555; background:#fafafa;
+  transition:all .15s;
+}
+.scale-btn:hover{border-color:var(--gold);}
+.scale-btn.selected{background:var(--navy); color:#fff; border-color:var(--navy);}
+.evidence-label{
+  font-size:11px; font-weight:700; color:#888; letter-spacing:.5px; margin-bottom:5px;
+}
+.evidence-textarea{
+  width:100%; min-height:56px; padding:9px 10px; border:1px solid #ccc; border-radius:6px;
+  font-size:13.5px; font-family:inherit; resize:vertical;
+}
+.evidence-textarea::placeholder{font-style:italic; color:#999;}
+
+.submit-wrap{text-align:center; margin-top:20px;}
+#submitBtn{
+  background:var(--gold); color:var(--navy); border:none; padding:15px 50px;
+  border-radius:8px; font-size:16px; font-weight:700; cursor:pointer;
+}
+#submitBtn:disabled{background:#ddd; color:#999; cursor:not-allowed;}
+.submit-note{font-size:12.5px; color:#888; margin-top:10px;}
+
+/* thank you screen */
+#thankyou{display:none; text-align:center; padding:90px 20px;}
+#thankyou .check{
+  width:70px; height:70px; border-radius:50%; background:var(--gold); color:var(--navy);
+  display:flex; align-items:center; justify-content:center; font-size:36px; margin:0 auto 24px;
+}
+#thankyou h2{color:var(--navy);}
+#thankyou p{color:#555; max-width:420px; margin:0 auto;}
+#thankyou .ref{color:var(--gray); font-size:13px; margin-top:16px;}
+
+/* off-screen report container for PDF capture */
+#reportCapture{
+  position:fixed; left:-10000px; top:0; width:760px; background:#fff; padding:30px;
+}
+</style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="gate-brand">MIRAI AXIS CONSULTING</div>
+    <h2>ScaleOS™ Dimension 9 Self-Assessment on Customer & Market Excellence</h2>
+    <p>This self-assessment is password-protected. Please enter the access code shared with you to continue.</p>
+    <input type="password" id="gatePassword" placeholder="Enter access code">
+    <button onclick="checkPassword()">Unlock Assessment</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel">0 of 32 questions answered</div>
+
+  <div class="hero">
+    <div class="brand">MIRAI AXIS SCALEOS™</div>
+    <h1>Dimension 9: Customer & Market Excellence Self-Assessment</h1>
+    <p>A structured evaluation of how well your organization understands, wins, delights, and retains customers to drive sustainable growth.</p>
+  </div>
+
+  <div class="container">
+
+    <div class="card intro-text">
+      <p>Every growing company eventually discovers that a great product doesn't sell itself, and a customer won by luck rarely stays. This assessment looks honestly at whether your organization truly understands its market, wins customers deliberately, delivers a genuinely good experience, and earns loyalty, or whether growth still depends on a few key relationships and individual effort.</p>
+      <p>What gets measured gets managed. The value of this assessment comes entirely from the honesty of your answers. A score that looks good but isn't true helps no one, least of all your own leadership team trying to make real decisions about where to invest next.</p>
+      <p>Please answer every question as accurately as you can, and use the evidence field under each question to note what actually backs up your score, a document, a system, a person who can confirm it. This assessment takes about 30 to 40 minutes to complete.</p>
+    </div>
+
+    <div class="card legend-card">
+      <h3>What the Score Means</h3>
+      <div class="legend-row"><div class="legend-num">1</div><div><b>Initial</b><br><span>No formal process exists. Things happen informally or inconsistently, with no clear ownership.</span></div></div>
+      <div class="legend-row"><div class="legend-num">2</div><div><b>Developing</b><br><span>Some elements exist but are inconsistent, reactive, or dependent on individual effort.</span></div></div>
+      <div class="legend-row"><div class="legend-num">3</div><div><b>Established</b><br><span>A defined process exists and is generally followed, though not tightly systematic.</span></div></div>
+      <div class="legend-row"><div class="legend-num">4</div><div><b>Managed</b><br><span>The process is consistent, documented, tracked, and actively used to guide decisions.</span></div></div>
+      <div class="legend-row"><div class="legend-num">5</div><div><b>Leading</b><br><span>The capability is a genuine organizational strength, continuously refined and embedded in the culture.</span></div></div>
+    </div>
+
+    <div class="card">
+      <h3 style="color:var(--navy); margin-top:0;">Your Details</h3>
+      <div class="form-grid">
+        <div class="field"><label>Company Name *</label><input type="text" id="f_company" required></div>
+        <div class="field"><label>Your Name *</label><input type="text" id="f_name" required></div>
+        <div class="field"><label>Email *</label><input type="email" id="f_email" required></div>
+        <div class="field"><label>Role / Designation *</label><input type="text" id="f_role" required></div>
+        <div class="field"><label>Department *</label><input type="text" id="f_department" required></div>
+        <div class="field">
+          <label>Type of Industry *</label>
+          <select id="f_industry" required>
+            <option value="">Select...</option>
+            <option>Automotive Components</option>
+            <option>Auto Ancillary / OEM Supplier</option>
+            <option>Engineering & Fabrication</option>
+            <option>Furniture & Interiors</option>
+            <option>Textiles & Apparel</option>
+            <option>Plastics & Polymers</option>
+            <option>Chemicals & Specialty Chemicals</option>
+            <option>Electronics & Electricals</option>
+            <option>Pharmaceuticals & Healthcare</option>
+            <option>Food Processing</option>
+            <option>Packaging</option>
+            <option>Metal & Foundry</option>
+            <option>Consumer Durables & Appliances</option>
+            <option>Industrial Machinery</option>
+            <option>Building Materials & Construction</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid full">
+        <div class="field"><label>Annual Revenue (Rs. Crore) *</label><input type="number" id="f_revenue" required></div>
+      </div>
+    </div>
+
+    <div id="accordionContainer"></div>
+
+    <div class="submit-wrap">
+      <button id="submitBtn" disabled onclick="submitAssessment()">Submit Assessment</button>
+      <div class="submit-note">Submit is enabled once your details and all 32 questions are complete.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Thank You Screen -->
+<div id="thankyou">
+  <div class="check">&#10003;</div>
+  <h2>Thank You</h2>
+  <p>Your Dimension 9 self-assessment has been received. The Mirai Axis team will review your responses and follow up with your organization shortly.</p>
+  <div class="ref" id="refNumber"></div>
+</div>
+
+<!-- Off-screen report container used only for PDF capture, never shown to the client -->
+<div id="reportCapture"></div>
+
+<script>
+const ACCESS_PASSWORD = "CUSTOMER&ME2026";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnw-IgXVcmPNKL4_tvgSoMYPsBc17zkORCFvG0Mng1Yea_LZiXxBopkDZkJBxh6CJy/exec";
+const BEST_IN_CLASS_TARGET = 4.5;
+
+function checkPassword(){
+  const val = document.getElementById('gatePassword').value;
+  if(val === ACCESS_PASSWORD){
+    document.getElementById('gate').style.display='none';
+    document.getElementById('app').style.display='block';
+  } else {
+    document.getElementById('gateError').innerText = 'Incorrect password. Please try again.';
+  }
+}
+document.getElementById('gatePassword').addEventListener('keydown', e=>{ if(e.key==='Enter') checkPassword(); });
+
+const capabilities = [
+
+  {
+    "code": "D9-C1",
+    "name": "Customer & Market Strategy",
+    "questions": [
+      "Has the organization clearly identified and prioritized its target customer segments and markets based on strategic opportunities and business objectives?",
+      "Does the organization have clearly defined value propositions and competitive positioning that differentiate it in the marketplace?",
+      "Are customer acquisition, market expansion, and commercial growth strategies aligned with overall business objectives and regularly communicated across the organization?",
+      "Does leadership regularly review customer strategy, market changes, competitive dynamics, and business performance to refine strategic priorities?"
+    ]
+  },
+  {
+    "code": "D9-C2",
+    "name": "Customer Insight & Market Intelligence",
+    "questions": [
+      "Does the organization systematically collect, analyze, and utilize customer feedback and behavioral insights to improve products, services, and customer experience?",
+      "Are market trends, competitor activities, industry developments, and emerging opportunities regularly monitored and incorporated into business planning?",
+      "Are customer and market insights consistently used to support strategic, commercial, and operational decision-making across the organization?",
+      "Does leadership regularly review customer insights and market intelligence to refine business strategy, identify new opportunities, and strengthen competitive positioning?"
+    ]
+  },
+  {
+    "code": "D9-C3",
+    "name": "Sales Excellence & Commercial Effectiveness",
+    "questions": [
+      "Does the organization use a structured sales process to identify, qualify, prioritize, and convert business opportunities?",
+      "Are customer relationships and key accounts proactively managed to strengthen long-term business partnerships and customer value?",
+      "Are pricing, proposal management, negotiations, and commercial approvals consistently governed to optimize profitability and customer outcomes?",
+      "Does leadership regularly review sales performance, pipeline health, forecast accuracy, and commercial capability to continuously improve business results?"
+    ]
+  },
+  {
+    "code": "D9-C4",
+    "name": "Marketing & Brand Management",
+    "questions": [
+      "Has the organization established a marketing strategy and brand positioning that clearly differentiates its products or services and supports business objectives?",
+      "Do marketing initiatives consistently generate customer awareness, qualified leads, and meaningful engagement across relevant customer channels?",
+      "Are marketing communications, digital platforms, campaigns, and brand standards consistently managed to strengthen brand reputation and customer trust?",
+      "Does leadership regularly measure marketing effectiveness and use performance insights to improve customer engagement, demand generation, and commercial outcomes?"
+    ]
+  },
+  {
+    "code": "D9-C5",
+    "name": "Customer Experience & Relationship Management",
+    "questions": [
+      "Does the organization understand and actively manage the customer journey to deliver consistent and positive experiences across all customer touchpoints?",
+      "Are customer relationships proactively managed through structured communication, engagement, and relationship-building activities?",
+      "Are customer inquiries, requests, and interactions handled efficiently, consistently, and in a manner that strengthens customer trust and satisfaction?",
+      "Does the organization regularly measure customer experience, analyze customer feedback, and implement improvements to strengthen customer relationships and business performance?"
+    ]
+  },
+  {
+    "code": "D9-C6",
+    "name": "Channel, Partner & Ecosystem Management",
+    "questions": [
+      "Has the organization established a structured channel and partner strategy aligned with customer needs, market expansion, and business objectives?",
+      "Are channel partners provided with appropriate onboarding, training, communication, and ongoing support to maximize their effectiveness?",
+      "Are partner performance, commercial compliance, customer outcomes, and relationship health regularly monitored and managed through structured governance?",
+      "Does the organization actively collaborate with partners to improve customer value, expand market opportunities, and strengthen long-term business relationships?"
+    ]
+  },
+  {
+    "code": "D9-C7",
+    "name": "Customer Success, Service & Retention",
+    "questions": [
+      "Does the organization proactively support customers in achieving value from its products or services throughout the customer lifecycle?",
+      "Are customer inquiries, service requests, complaints, and issues managed through structured processes that ensure timely and effective resolution?",
+      "Has the organization established structured customer retention, loyalty, and ongoing engagement programs to strengthen long-term customer relationships?",
+      "Does leadership regularly review customer success, service quality, retention performance, and customer feedback to drive continuous improvement?"
+    ]
+  },
+  {
+    "code": "D9-C8",
+    "name": "Customer Performance & Continuous Improvement",
+    "questions": [
+      "Does the organization define and regularly monitor customer and commercial KPIs that measure customer value, commercial performance, and business growth?",
+      "Are customer and commercial performance results regularly reviewed through structured governance to support timely decision-making and accountability?",
+      "Does the organization systematically use customer feedback, performance data, and lessons learned to drive continuous improvement across customer-facing functions?",
+      "Does leadership benchmark customer and commercial performance against industry standards and use insights to strengthen long-term competitiveness and organizational excellence?"
+    ]
+  }
+
+];
+
+const answers = {}; // key: `${capIndex}_${qIndex}` -> {score, evidence}
+let totalQuestions = 0;
+capabilities.forEach(c => totalQuestions += c.questions.length);
+
+function buildAccordion(){
+  const container = document.getElementById('accordionContainer');
+  capabilities.forEach((cap, ci) => {
+    const acc = document.createElement('div');
+    acc.className = 'accordion';
+
+    const header = document.createElement('div');
+    header.className = 'accordion-header' + (ci===0 ? ' open' : '');
+    header.innerHTML = `<div><div class="cap-code">${cap.code}</div><div class="cap-title">${cap.name}</div></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="accordion-counter" id="counter_${ci}">0 of ${cap.questions.length} answered</div>
+        <div class="accordion-arrow">&#9660;</div>
+      </div>`;
+    header.onclick = () => {
+      header.classList.toggle('open');
+      body.classList.toggle('open');
+    };
+
+    const body = document.createElement('div');
+    body.className = 'accordion-body' + (ci===0 ? ' open' : '');
+
+    cap.questions.forEach((q, qi) => {
+      const qBlock = document.createElement('div');
+      qBlock.className = 'question-block';
+      qBlock.innerHTML = `
+        <div class="question-text">${qi+1}. ${q}</div>
+        <div class="scale-row" id="scale_${ci}_${qi}">
+          ${[1,2,3,4,5].map(n=>`<div class="scale-btn" data-score="${n}" onclick="selectScore(${ci},${qi},${n})">${n}</div>`).join('')}
+        </div>
+        <div class="evidence-label">EVIDENCE NOTES (what exists | how it works | who confirmed | date verified)</div>
+        <textarea class="evidence-textarea" placeholder="Describe specific evidence: name the document, system, or person that confirms this score..." oninput="updateEvidence(${ci},${qi},this.value)"></textarea>
+      `;
+      body.appendChild(qBlock);
+    });
+
+    acc.appendChild(header);
+    acc.appendChild(body);
+    container.appendChild(acc);
+  });
+}
+
+function selectScore(ci, qi, score){
+  const key = `${ci}_${qi}`;
+  answers[key] = answers[key] || {};
+  answers[key].score = score;
+  const scaleDiv = document.getElementById(`scale_${ci}_${qi}`);
+  [...scaleDiv.children].forEach(btn=>{
+    btn.classList.toggle('selected', parseInt(btn.dataset.score)===score);
+  });
+  updateProgress();
+}
+
+function updateEvidence(ci, qi, val){
+  const key = `${ci}_${qi}`;
+  answers[key] = answers[key] || {};
+  answers[key].evidence = val;
+}
+
+function updateProgress(){
+  let answered = 0;
+  capabilities.forEach((cap, ci)=>{
+    let capAnswered = 0;
+    cap.questions.forEach((q, qi)=>{
+      if(answers[`${ci}_${qi}`] && answers[`${ci}_${qi}`].score){ answered++; capAnswered++; }
+    });
+    const counter = document.getElementById(`counter_${ci}`);
+    if(counter) counter.innerText = `${capAnswered} of ${cap.questions.length} answered`;
+  });
+  totalQuestions = 0;
+  capabilities.forEach(c => totalQuestions += c.questions.length);
+  const pct = Math.round((answered/totalQuestions)*100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').innerText = `${answered} of ${totalQuestions} questions answered`;
+  checkFormComplete();
+}
+
+function checkFormComplete(){
+  const requiredFields = ['f_company','f_name','f_email','f_role','f_department','f_industry','f_revenue'];
+  const fieldsOk = requiredFields.every(id => document.getElementById(id).value.trim() !== '');
+  let answered = 0;
+  capabilities.forEach((cap, ci)=> cap.questions.forEach((q, qi)=>{
+    if(answers[`${ci}_${qi}`] && answers[`${ci}_${qi}`].score) answered++;
+  }));
+  const allAnswered = answered === totalQuestions;
+  document.getElementById('submitBtn').disabled = !(fieldsOk && allAnswered);
+}
+
+['f_company','f_name','f_email','f_role','f_department','f_industry','f_revenue'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', checkFormComplete);
+  document.getElementById(id).addEventListener('change', checkFormComplete);
+});
+
+buildAccordion();
+
+// ---------------- Scoring & report generation ----------------
+function computeScores(){
+  const capScores = capabilities.map((cap, ci)=>{
+    let sum = 0;
+    cap.questions.forEach((q, qi)=> sum += answers[`${ci}_${qi}`].score );
+    return { code: cap.code, name: cap.name, score: sum / cap.questions.length };
+  });
+  const overall = capScores.reduce((s,c)=>s+c.score,0) / capScores.length;
+  return { capScores, overall };
+}
+
+function bandFor(score){
+  if(score < 2) return { band:'High Risk', text:'This dimension shows fundamental gaps that need immediate leadership attention before scaling further.' };
+  if(score < 3) return { band:'Developing', text:'Basic elements exist but are inconsistent. Building consistency here will reduce risk as the organization grows.' };
+  if(score < 4) return { band:'Progressing', text:'A reasonable foundation is in place. Focused effort on the lower-scoring capabilities will accelerate readiness.' };
+  if(score < 4.5) return { band:'Advanced', text:"This dimension is well managed and supports the organization's growth ambitions." };
+  return { band:'Best in Class', text:'This dimension is a genuine strength and can be leveraged as a competitive advantage.' };
+}
+
+async function buildReportImages(capScores, overall, revenue){
+  const el = document.getElementById('reportCapture');
+  const b = bandFor(overall);
+  const riskAmount = revenue ? (revenue * 0.10 * (1 - overall/5)) : null;
+
+  el.innerHTML = `
+    <div style="font-family:Segoe UI, Arial, sans-serif; color:#222;">
+      <div style="text-align:center; padding:20px 0; background:#1B2A4A; color:#fff; border-radius:8px;">
+        <div style="color:#C9A84C; font-size:12px; letter-spacing:2px; font-weight:700;">MIRAI AXIS SCALEOS™</div>
+        <div style="font-size:20px; font-weight:700; margin-top:6px;">Dimension 9: Customer & Market Excellence — Overview Report</div>
+      </div>
+      <div style="text-align:center; padding:24px 0;">
+        <div style="font-size:44px; font-weight:800; color:#1B2A4A;">${overall.toFixed(2)} / 5.0</div>
+        <div style="font-size:16px; font-weight:700; color:#C9A84C;">${b.band}</div>
+        <div style="font-size:13px; color:#555; max-width:520px; margin:8px auto 0;">${b.text}</div>
+      </div>
+      <div style="text-align:center;"><canvas id="radarCanvas" width="500" height="380"></canvas></div>
+      ${riskAmount !== null ? `
+      <div style="margin:20px 0; padding:16px; background:#F4EFE0; border-radius:8px; border:1px solid #C9A84C;">
+        <div style="font-weight:700; color:#1B2A4A; font-size:14px;">Estimated Revenue at Risk: Rs. ${riskAmount.toFixed(2)} Crore</div>
+        <div style="font-size:11.5px; color:#666; font-style:italic; margin-top:6px;">This is a benchmark-based directional estimate, not a measured loss. It is intended to show the relative scale of opportunity tied to customer and commercial gaps, not a precise, audited number.</div>
+      </div>` : ''}
+      <div style="margin:20px 0;">
+        <div style="font-weight:700; color:#1B2A4A; margin-bottom:8px;">Capability Scorecard</div>
+        <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+          ${capScores.map((c,i)=>`<tr style="background:${i%2===0?'#EDEFF3':'#fff'};">
+            <td style="padding:6px 10px; font-weight:700; color:#1B2A4A;">${c.code}</td>
+            <td style="padding:6px 10px;">${c.name}</td>
+            <td style="padding:6px 10px; text-align:right; font-weight:700;">${c.score.toFixed(2)}</td>
+          </tr>`).join('')}
+        </table>
+      </div>
+      <div style="margin:20px 0;">
+        <div style="font-weight:700; color:#1B2A4A; margin-bottom:8px;">Recommended Next Steps</div>
+        <ol style="font-size:12.5px; line-height:1.8; color:#333;">
+          <li>Share this report with the leadership team as a baseline for Dimension 9.</li>
+          <li>Focus improvement effort on the three lowest-scoring capabilities first.</li>
+          <li>Contact Mirai Axis Consulting to discuss a structured Customer & Market Excellence roadmap.</li>
+          <li>Protect and reinforce the three strongest capabilities so they don't slip.</li>
+        </ol>
+      </div>
+    </div>
+  `;
+
+  const ctx = document.getElementById('radarCanvas').getContext('2d');
+  const chart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: capScores.map(c=>c.code),
+      datasets: [
+        { label:'Current Score', data: capScores.map(c=>c.score), backgroundColor:'rgba(27,42,74,0.2)', borderColor:'#1B2A4A', pointBackgroundColor:'#1B2A4A' },
+        { label:'Best-in-Class Target', data: capScores.map(()=>BEST_IN_CLASS_TARGET), backgroundColor:'rgba(201,168,76,0.08)', borderColor:'#C9A84C', pointBackgroundColor:'#C9A84C', borderDash:[4,4] }
+      ]
+    },
+    options: {
+      animation:false,
+      responsive:false,
+      scales:{ r:{ min:0, max:5, ticks:{ stepSize:1 } } },
+      plugins:{ legend:{ position:'bottom', labels:{ font:{ size:10 } } } }
+    }
+  });
+  chart.resize();
+  chart.update('none');
+  await new Promise(r=>setTimeout(r,300));
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+  const overviewCanvas = await html2canvas(el, { scale:2, backgroundColor:'#ffffff' });
+  const overviewJpeg = overviewCanvas.toDataURL('image/jpeg', 0.95);
+
+  el.innerHTML = '';
+  return overviewJpeg;
+}
+
+function buildOverviewPdf(jpegDataUrl){
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p','pt','a4');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const MARGIN = 10 * 72/25.4;
+  const usableW = pageWidth - MARGIN*2;
+  const usableH = pageHeight - MARGIN*2;
+
+  const img = new Image();
+  img.src = jpegDataUrl;
+  return new Promise(resolve=>{
+    img.onload = ()=>{
+      const scale = usableW / img.width;
+      const scaledHeight = img.height * scale;
+      const pageSlicePx = usableH / scale;
+      let renderedPx = 0;
+      let first = true;
+      while(renderedPx < img.height){
+        const sliceHeightPx = Math.min(pageSlicePx, img.height - renderedPx);
+        const tmp = document.createElement('canvas');
+        tmp.width = img.width;
+        tmp.height = sliceHeightPx;
+        const tctx = tmp.getContext('2d');
+        tctx.fillStyle = '#ffffff';
+        tctx.fillRect(0,0,tmp.width,tmp.height);
+        tctx.drawImage(img, 0, renderedPx, img.width, sliceHeightPx, 0, 0, img.width, sliceHeightPx);
+        const sliceData = tmp.toDataURL('image/jpeg', 0.95);
+        if(!first) pdf.addPage();
+        pdf.addImage(sliceData, 'JPEG', MARGIN, MARGIN, usableW, sliceHeightPx*scale);
+        renderedPx += sliceHeightPx;
+        first = false;
+      }
+      resolve(pdf.output('datauristring').split(',')[1]);
+    };
+  });
+}
+
+function buildAnswerSheetPdf(details, capScores){
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p','pt','a4');
+  const margin = 40;
+  let y = margin;
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const lineHeight = 14;
+
+  pdf.setFontSize(14); pdf.setFont(undefined,'bold');
+  pdf.text('MiraiAxis ScaleOS - Dimension 9 Answer Sheet', margin, y); y+=22;
+  pdf.setFontSize(10); pdf.setFont(undefined,'normal');
+  [`Company: ${details.company}`, `Respondent: ${details.name} (${details.role}, ${details.department})`,
+   `Email: ${details.email}`, `Industry: ${details.industry}`, `Annual Revenue: Rs. ${details.revenue} Crore`,
+   `Overall Score: ${details.overall.toFixed(2)} / 5.0`].forEach(line=>{
+    pdf.text(line, margin, y); y+=lineHeight;
+  });
+  y += 10;
+
+  capabilities.forEach((cap, ci)=>{
+    if(y > pageHeight - 80){ pdf.addPage(); y = margin; }
+    pdf.setFont(undefined,'bold'); pdf.setFontSize(11);
+    pdf.text(`${cap.code} - ${cap.name} (Score: ${capScores[ci].score.toFixed(2)})`, margin, y); y+=18;
+    pdf.setFont(undefined,'normal'); pdf.setFontSize(9.5);
+    cap.questions.forEach((q, qi)=>{
+      if(y > pageHeight - 60){ pdf.addPage(); y = margin; }
+      const ans = answers[`${ci}_${qi}`];
+      const qLines = pdf.splitTextToSize(`Q${qi+1}. ${q}`, 515);
+      pdf.text(qLines, margin, y); y += qLines.length*lineHeight;
+      pdf.setFont(undefined,'bold');
+      pdf.text(`Score: ${ans.score}`, margin, y); y+=lineHeight;
+      pdf.setFont(undefined,'italic');
+      const evText = ans.evidence && ans.evidence.trim() ? ans.evidence.trim() : 'No evidence note provided.';
+      const evLines = pdf.splitTextToSize(`Evidence: ${evText}`, 515);
+      if(y + evLines.length*lineHeight > pageHeight - 40){ pdf.addPage(); y = margin; }
+      pdf.text(evLines, margin, y); y += evLines.length*lineHeight + 8;
+      pdf.setFont(undefined,'normal');
+    });
+    y += 8;
+  });
+
+  return pdf.output('datauristring').split(',')[1];
+}
+
+async function submitAssessment(){
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').innerText = 'Submitting...';
+
+  const details = {
+    company: document.getElementById('f_company').value,
+    name: document.getElementById('f_name').value,
+    email: document.getElementById('f_email').value,
+    role: document.getElementById('f_role').value,
+    department: document.getElementById('f_department').value,
+    industry: document.getElementById('f_industry').value,
+    revenue: parseFloat(document.getElementById('f_revenue').value)
+  };
+
+  const { capScores, overall } = computeScores();
+  details.overall = overall;
+
+  const overviewJpeg = await buildReportImages(capScores, overall, details.revenue);
+  const overviewPdfBase64 = await buildOverviewPdf(overviewJpeg);
+  const answerSheetPdfBase64 = buildAnswerSheetPdf(details, capScores);
+
+  const refNumber = 'D9-' + Date.now().toString().slice(-8);
+
+  const payload = {
+    dimension: 'Dimension 9 - Customer & Market Excellence',
+    refNumber,
+    details,
+    overallScore: overall,
+    capabilityScores: capScores,
+    overviewPdfBase64,
+    answerSheetPdfBase64
+  };
+
+  try{
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{ 'Content-Type':'text/plain' },
+      body: JSON.stringify(payload)
+    });
+  }catch(err){
+    console.error('Submission error', err);
+  }
+
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('refNumber').innerText = 'Reference: ' + refNumber;
+  document.getElementById('thankyou').style.display = 'block';
+}
+</script>
+</body>
+</html>
