@@ -595,11 +595,23 @@ checkSubmit();
 function computeScores(){
   const capScores = capabilities.map((cap, ci)=>{
     let sum = 0;
-    cap.questions.forEach((q, qi)=> sum += answers[`${ci}_${qi}`].score );
-    return { code: cap.code, name: cap.name, score: sum / cap.questions.length };
+    let availableCount = 0;
+    cap.questions.forEach((q, qi)=>{
+      sum += answers[`${ci}_${qi}`].score;
+      const reliability = document.getElementById(`reliability_${ci}_${qi}`).value;
+      if(reliability === 'available') availableCount++;
+    });
+    const confidencePct = Math.round((availableCount / cap.questions.length) * 100);
+    return { code: cap.code, name: cap.name, score: sum / cap.questions.length, confidencePct };
   });
   const overall = capScores.reduce((s,c)=>s+c.score,0) / capScores.length;
   return { capScores, overall };
+}
+
+function confidenceBadge(pct){
+  if(pct >= 80) return { label:'High', color:'#1a7f4b', bg:'#e2f5e9' };
+  if(pct >= 50) return { label:'Medium', color:'#8a6100', bg:'#FEF6DC' };
+  return { label:'Low', color:'#c0392b', bg:'#fbe4e4' };
 }
 
 function bandFor(score){
@@ -652,22 +664,43 @@ async function buildReportImages(capScores, overall, revenue){
       <div style="margin:20px 0;">
         <div style="font-weight:700; color:#1B2A4A; margin-bottom:8px; text-align:center;">Evidence Quality Summary</div>
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;">
-          <canvas id="evidenceCanvas" width="280" height="280" style="width:280px; height:280px; max-width:280px; max-height:280px;"></canvas>
+          <div style="width:280px; height:280px; overflow:hidden;">
+            <canvas id="evidenceCanvas" width="280" height="280"></canvas>
+          </div>
           <div style="font-size:13px; color:#333; line-height:2; text-align:center;">
             <div><span style="display:inline-block; width:12px; height:12px; background:#1B2A4A; border-radius:2px; margin-right:8px;"></span>Evidence Available: <b>${evStats.available}</b> (${evStats.availablePct}%)</div>
             <div><span style="display:inline-block; width:12px; height:12px; background:#C9A84C; border-radius:2px; margin-right:8px;"></span>Evidence Not Available: <b>${evStats.notAvailable}</b> (${evStats.notAvailablePct}%)</div>
             <div style="color:#888; font-size:11.5px; margin-top:4px;">Based on ${evStats.total} of ${totalQuestions} questions</div>
           </div>
         </div>
+        ${(() => {
+          const dc = confidenceBadge(evStats.availablePct);
+          const msg = dc.label === 'Low'
+            ? 'A significant share of responses in this dimension lack verifiable evidence. Recommend additional validation before using these scores for investment or resourcing decisions.'
+            : dc.label === 'Medium'
+              ? 'Some responses could benefit from stronger supporting evidence before these scores drive major decisions.'
+              : 'These scores are well-supported by verifiable evidence.';
+          return `<div style="margin:14px auto 0; max-width:520px; padding:8px 14px; border-radius:6px; background:${dc.bg}; color:${dc.color}; font-size:12px; font-weight:700; text-align:center;">Confidence: ${dc.label} (${evStats.availablePct}% evidence-backed) — ${msg}</div>`;
+        })()}
       </div>
       <div style="margin:20px 0;">
         <div style="font-weight:700; color:#1B2A4A; margin-bottom:8px;">Capability Scorecard</div>
         <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
-          ${capScores.map((c,i)=>`<tr style="background:${i%2===0?'#EDEFF3':'#fff'};">
+          <tr style="background:#1B2A4A; color:#fff;">
+            <td style="padding:6px 10px; font-weight:700;">Code</td>
+            <td style="padding:6px 10px; font-weight:700;">Capability</td>
+            <td style="padding:6px 10px; font-weight:700; text-align:right;">Score</td>
+            <td style="padding:6px 10px; font-weight:700; text-align:center;">Evidence Confidence</td>
+          </tr>
+          ${capScores.map((c,i)=>{
+            const cb = confidenceBadge(c.confidencePct);
+            return `<tr style="background:${i%2===0?'#EDEFF3':'#fff'};">
             <td style="padding:6px 10px; font-weight:700; color:#1B2A4A;">${c.code}</td>
             <td style="padding:6px 10px;">${c.name}</td>
             <td style="padding:6px 10px; text-align:right; font-weight:700;">${c.score.toFixed(2)}</td>
-          </tr>`).join('')}
+            <td style="padding:6px 10px; text-align:center;"><span style="background:${cb.bg}; color:${cb.color}; padding:2px 10px; border-radius:10px; font-weight:700; font-size:11px;">${cb.label} (${c.confidencePct}%)</span></td>
+          </tr>`;
+          }).join('')}
         </table>
       </div>
       <div style="margin:20px 0;">
@@ -712,6 +745,7 @@ async function buildReportImages(capScores, overall, revenue){
     options: {
       animation:false,
       responsive:false,
+      maintainAspectRatio:false,
       plugins:{
         legend:{ display:false },
         datalabels:{
